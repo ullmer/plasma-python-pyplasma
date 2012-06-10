@@ -1,0 +1,17 @@
+#!python
+
+import optparse
+import plasma.hose
+
+def main():
+    p = optparse.OptionParser()
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#Usage: p-rename <old name> <new name>
+    opts, args = p.parse_args()
+    plasma.hose.Hose.rename(args[0], args[1])
+
+if '__main__' == __name__:
+    main()
+
+
+

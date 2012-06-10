@@ -1,0 +1,33 @@
+
+(Python plasma bindings, open-sourced as part of 2022 arrangement with
+Oblong Inc.)
+
+- - - -
+
+Original README contents (minus invitation to email author) follows verbatim.
+
+- - - -
+
+This is all nicely packaged up with a propper setup.py script now.
+
+Some interesting targets:
+* build: Build, but don't install
+* test: Run the unit tests
+* doc: Build the HTML documentation (ends up in ./doc/_build/html)
+
+TCP pools work like a champ, though TLS pools are not fully tested.
+
+Local pools should mostly work, but they aren't nearly well tested enough,
+so use at your own risk.  Resizing of local pools isn't implemented, but the
+rest of the protocol should work.
+
+There is a benchmarking script you can run to see how well this performs.
+  python -m plasma.hose.benchmark (--help for options)
+
+Also, while there are a number of bin scripts included with this release, none
+of them are working yet.  In particular, don't try to use the tcp server
+included with this release.
+
+For a more complete rundown of what works and what doesn't, build the HTML
+docs, and check out the index page.
+

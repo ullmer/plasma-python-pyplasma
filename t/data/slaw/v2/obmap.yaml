@@ -1,0 +1,8 @@
+%YAML 1.1
+%TAG ! tag:oblong.com,2009:slaw/
+--- !!omap
+- first: some stuff
+- second: !vector [ !i8 1, !i8 -1, !i8 10 ]
+- third: !!seq
+  - one
+  - !i32 2

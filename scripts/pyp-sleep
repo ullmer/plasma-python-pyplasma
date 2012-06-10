@@ -1,0 +1,16 @@
+#!python
+
+import optparse
+import plasma
+
+def main():
+    p = optparse.OptionParser()
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#Usage: p-sleep <pool name>
+    opts, names = p.parse_args()
+
+if '__main__' == __name__:
+    main()
+
+
+

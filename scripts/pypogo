@@ -1,0 +1,46 @@
+#!python
+
+import optparse
+import plasma
+from plasma.const import *
+
+def main():
+	p = optparse.OptionParser()
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#Usage: pogo [options] [inputfiles...]
+#  -h, --help             print this help, then exit
+#  -i, --input            input pools and/or files
+#  -o, --output           output pools or files
+#  -m, --message          message in pools and/or files
+#  -s, --restart          restart the protist whenever it completes with an error
+#      --practice         practice only, build but do not execute protist
+#  -b, --binary           force binary (useful only on stdin)
+#      --stats            generate protist stats at exit
+#      --profile          generate continuous protist stats
+#      --header           for logging: print launch command
+#      --footer           for logging: print exit status
+#  -L, --poollog          for logging: also log to named pool
+#  -v, --version          show version number and exit
+#  -u, --unique           use unique pool names
+#  -c, --create           create auto-disposed pools as needed
+#  -p, --persist          create persistent pools as needed
+#  -n, --next             do not block across all inputs (with pool_await_next_multi)
+#  -a, --await            pool timeout across all inputs (<0 is forever)(default 0.2)
+#  -d, --drain            drain all available input on each cycle
+#  -x, --exit             exit when no protein available on any input channel
+#  -j, --jump             jump over old inputs to latest protein
+#  -r, --rewind           rewind input pools to oldest available protein
+#  -t, --timecode         add timecode keypair upon protein read to ingests
+#      --priority         use priority input ordering (not round robin)
+#      --backby           move read head back by # proteins
+#  -1                     short for --backby 1
+#  -2                     short for --backby 1
+#  -f, --filter           filter strings - in order descrip filters
+#  -g, --gap              use gap search (instead of contig) for filters
+#  inputfiles...          files to be executed in order, defaults to stdin
+	opts, names = p.parse_args()
+
+if '__main__' == __name__:
+    main()
+
+

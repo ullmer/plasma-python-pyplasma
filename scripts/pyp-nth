@@ -1,0 +1,29 @@
+#!python
+
+import optparse
+import plasma.hose
+from plasma.exceptions import *
+
+def main():
+    p = optparse.OptionParser()
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#Usage: p-nth <pool name> <protein index> [file]
+    opts, args = p.parse_args()
+    try:
+        h = plasma.hose.Hose.participate(args[0])
+        try:
+            p = h.nth_protein(int(args[1]))
+            print 'time %f, size %d - this protein:' % (p.timestamp().timestamp(), len(p.to_slaw(2)))
+            print p.to_json()
+        except PoolNoSuchProteinException:
+            print 'that protein is not there'
+        h.withdraw()
+    except ObException, e:
+        ex = re.sub('([A-Z])', '_\\1', type(e).__name__)[1:].upper()
+        print 'bad participate: %s' % ex.replace('_EXCEPTION', '')
+
+if '__main__' == __name__:
+    main()
+
+
+

@@ -1,0 +1,101 @@
+{#
+  platform/layout.html
+  ~~~~~~~~~~~~~~~~~~~~
+
+  Sphinx layout template for the platform theme, adapted from
+  the builtin agogo theme
+#}
+
+{% extends "basic/layout.html" %}
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- using platfrom theme! -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset={{ encoding }}" />
+    {{ metatags }}
+    {%- block htmltitle %}
+    <title>{{ title|striptags|e }}{{ titlesuffix }}</title>
+    {%- endblock %}
+    {{ css() }}
+    {%- if not embedded %}
+    {{ script() }}
+    {%- if use_opensearch %}
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="{% trans docstitle=docstitle|e %}Search within {{ docstitle }}{% endtrans %}"
+          href="{{ pathto('_static/opensearch.xml', 1) }}"/>
+    {%- endif %}
+    {%- if favicon %}
+    <link rel="shortcut icon" href="{{ pathto('_static/' + favicon, 1) }}"/>
+    {%- endif %}
+    {%- endif %}
+{%- block linktags %}
+    {%- if hasdoc('about') %}
+    <link rel="author" title="{{ _('About these documents') }}" href="{{ pathto('about') }}" />
+    {%- endif %}
+    {%- if hasdoc('genindex') %}
+    <link rel="index" title="{{ _('Index') }}" href="{{ pathto('genindex') }}" />
+    {%- endif %}
+    {%- if hasdoc('search') %}
+    <link rel="search" title="{{ _('Search') }}" href="{{ pathto('search') }}" />
+    {%- endif %}
+    {%- if hasdoc('copyright') %}
+    <link rel="copyright" title="{{ _('Copyright') }}" href="{{ pathto('copyright') }}" />
+    {%- endif %}
+    <link rel="top" title="{{ docstitle|e }}" href="{{ pathto('index') }}" />
+    {%- if parents %}
+    <link rel="up" title="{{ parents[-1].title|striptags|e }}" href="{{ parents[-1].link|e }}" />
+    {%- endif %}
+    {%- if next %}
+    <link rel="next" title="{{ next.title|striptags|e }}" href="{{ next.link|e }}" />
+    {%- endif %}
+    {%- if prev %}
+    <link rel="prev" title="{{ prev.title|striptags|e }}" href="{{ prev.link|e }}" />
+    {%- endif %}
+{%- endblock %}
+    <link href="https://platform.oblong.com/assets/application-652548be32f0ec0325722940d46e8019.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="https://platform.oblong.com/assets/formatting-3e168121b4ae3ffef62e73560050ff8e.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="https://platform.oblong.com/assets/theme-e1c92b9988bdc2d6c188ef2a5bc5f4cc.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="https://platform.oblong.com/assets/home-638c6b7fa831599055b9997c490ff5ba.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="https://platform.oblong.com/assets/modernizr-min-b146bece938a05d4f571b4e8150dd460.js" type="text/javascript"></script>
+    <script src="http://platform.oblong.com/menujs"></script>
+{%- block extrahead %} {% endblock %}
+  </head>
+  <body>
+
+    <div id="page_container">
+      <div id="page">
+
+        {%- block header %}<div id="header">
+          <div id="header_content">
+            <div id="logo" onclick="document.location = '/'"></div>
+            <nav id="menu" class="menu"></nav>
+          </div>
+        </div>{% endblock %}
+
+        {%- block content %}<div id="realbody" class="clearfix">
+          <section class="no_body_content_left no_body_content_right" id="body_content">
+            <section id="body">
+              <div class="inner">
+                {% block document %}{% block body %} {% endblock %}{% endblock %}
+              </div>
+            </section>
+            <section id="side_body">
+              <div class="inner">
+                {% block sidebar2 %}{{ sidebar() }}{% endblock %}
+              </div>
+            </section>
+          </section>
+        </div>{% endblock %}
+
+        {% block footer %}<div id="footer">
+          <div id="footer_content">
+            <p>Copyright &copy; {{ copyright }} Oblong</p>
+          </div>
+        </div>{% endblock %}
+
+      </div>
+    </div>
+
+  </body>
+</html>
+

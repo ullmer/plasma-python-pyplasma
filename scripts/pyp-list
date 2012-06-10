@@ -1,0 +1,64 @@
+#!python
+
+import optparse
+import plasma
+import plasma.hose
+from plasma.exceptions import *
+
+def pretty_size(num):
+    if num == 0:
+        return '0'
+    suffixes = [' ', 'K', 'M', 'G', 'T']
+    suf = suffixes.pop(0)
+    if num < 1024:
+        return '%d' % num
+    while num >= 1024 and len(suffixes) > 0:
+        num /= 1024.0
+        suf = suffixes.pop(0)
+    return '%.2f%s' % (num, suf)
+
+def main():
+    p = optparse.OptionParser()
+    p.add_option('-i', '--extra', dest='extra', action='store_true', default=False, help='print additional information about each pool')
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#Usage: p-list [-i] [server]
+#  -i print additional information about each pool
+#  server is an optional URI of the form tcp://squash.local:1234/
+    opts, args = p.parse_args()
+    if len(args) > 0:
+        base = args[0]
+        hops = 1
+        pools = plasma.hose.Hose.list_ex(args[0])
+    else:
+        base = ''
+        hops = 0
+        pools = plasma.hose.Hose.list_pools()
+    for pool in pools:
+        if opts.extra:
+            # name, pretty size, (pretty size used), sSLAW_VERSIONmMMAP_VERSION, FLAGS*index step
+            try:
+                h = plasma.hose.Hose.participate('%s%s' % (base, pool))
+                info = h.get_info(hops).ingests()
+                h.withdraw()
+                summary = list()
+                if info.get('size', -1) >= 0:
+                    summary.append('%9s' % pretty_size(info['size']))
+                if info.get('size-used', -1) >= 0:
+                    summary.append('(%s)' % pretty_size(info['size-used']).replace(' ', ''))
+                if info.get('slaw-version', -1) >= 0 and info.get('mmap-pool-version', -1) >= 0:
+                    summary.append('s%dm%d' % (info['slaw-version'], info['mmap-pool-version']))
+                if info.get('index-capacity', 0) > 0:
+                    summary.append('%s*%d' % (info.get('flags', ''), info['index-step']))
+                elif info.get('flags', '') != '':
+                    summary.append('%s' % info['flags'])
+                print '%-40s %s' % (pool, ', '.join(summary))
+            except ObException, e:
+                print '%-40s POOL_CORRUPT' % pool
+        else:
+            print pool
+
+if '__main__' == __name__:
+    main()
+
+
+

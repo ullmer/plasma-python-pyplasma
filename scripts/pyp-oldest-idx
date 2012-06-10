@@ -1,0 +1,24 @@
+#!python
+
+import optparse
+import plasma.hose
+from plasma.exceptions import *
+
+def main():
+    p = optparse.OptionParser()
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#Usage: p-newest-idx <pool name>
+    opts, args = p.parse_args()
+    try:
+        h = plasma.hose.Hose.participate(args[0])
+        try:
+            print '%d' % h.oldest_index()
+        except PoolNoSuchProteinException:
+            print 'pool is empty'
+        h.withdraw()
+    except ObException, e:
+        print 'bad participate: %s' % e.name()
+
+if '__main__' == __name__:
+    main()
+

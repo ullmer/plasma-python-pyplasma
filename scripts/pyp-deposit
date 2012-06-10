@@ -1,0 +1,36 @@
+#!python
+
+import optparse
+from loam import *
+from plasma.protein import Protein
+import plasma.hose
+
+def main():
+    p = optparse.OptionParser()
+    p.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False)
+    p.add_option('-d', '--descrip', dest='descrips', action='append')
+    p.add_option('-i', '--ingest', dest='ingests', action='append', help='<ingest-key>:<ingest-value>')
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#Usage: p-deposit [-v] [-d <descrip> ...] 
+#    [-i <ingest-key>:<ingest-value> ...] <poolname> 
+    opts, args = p.parse_args()
+    descrips = oblist()
+    for d in opts.descrips:
+        descrips.append(d)
+    ingests = obmap()
+    for i in opts.ingests:
+        k,v = i.split(':', 1)
+        ingests[k] = v
+    p = Protein(descrips, ingests)
+    h = plasma.hose.Hose.participate(args[0])
+    if opts.verbose:
+        print 'depositing in %s\n%s' % (args[0], p)
+    dep = h.deposit_ex(p)
+    if opts.verbose:
+        print 'deposited protein at index %d with timestamp %s' % (dep['index'], dep['timestamp'])
+    h.withdraw()
+
+if '__main__' == __name__:
+    main()
+
+

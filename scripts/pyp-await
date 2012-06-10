@@ -1,0 +1,26 @@
+#!python
+
+import optparse
+from loam import *
+from plasma.protein import Protein
+import plasma.hose
+
+def main():
+    p = optparse.OptionParser()
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#Usage: p-await <pool name>
+    opts, args = p.parse_args()
+    h = plasma.hose.Hose.participate(args[0])
+    while True:
+        try:
+            p = h.await_next()
+            print '%s' % p
+        except KeyboardInterrupt:
+            break
+    h.withdraw()
+        
+
+if '__main__' == __name__:
+    main()
+
+

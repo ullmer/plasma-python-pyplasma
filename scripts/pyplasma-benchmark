@@ -1,0 +1,266 @@
+#!python
+
+import os, datetime, sys, select, random, traceback, pickle
+from loam import *
+from plasma.const import *
+from plasma.exceptions import *
+from plasma.protein import Protein
+from plasma.hose import Hose
+import optparse
+
+WORDS = list()
+GET_PROTEINS_FROM_FILE = None
+
+def init_words():
+    global WORDS
+    for line in file('/usr/share/dict/words'):
+        WORDS.append(line)
+
+def random_word():
+    i = random.randrange(0, len(WORDS))
+    return WORDS[i]
+
+def random_protein(pid, n):
+    words = list(random_word() for i in range(random.randint(0, 10)))
+    if random.random() > 0.5:
+        vn = 3
+    else:
+        vn = 4
+    if random.random() > 0.5:
+        vt = float32
+    else:
+        vt = int32
+    vx = list(vt(random.random() * (2**24)) for i in range(vn))
+    vc = globals()['v%d%s' % (vn, vt.__name__)]
+    v = vc(*vx)
+    descrips = oblist(['benchmark', '%s' % pid])
+    ingests = obmap({ 'n': int64(n), 'vect': v, 'words': words })
+    return Protein(descrips=descrips, ingests=ingests)
+
+def timesince(start, count=1):
+    end = datetime.datetime.now()
+    delta = end - start
+    time = (delta.days * 86400) + delta.seconds + (delta.microseconds / 1.0E6)
+    return time / count
+
+def xfork(hose_name, processes, n, func, *args):
+    args = list(args)
+    ready_fhs = set()
+    wait_fifos = list()
+    pids = set()
+    ready_fh_pids = dict()
+    for i in range(processes):
+        ready_fifo = '/tmp/pyplasma-bench-ready.%d.%d' % (os.getpid(), i+n)
+        wait_fifo = '/tmp/pyplasma-bench-wait.%d.%d' % (os.getpid(), i+n)
+        os.mkfifo(ready_fifo)
+        os.mkfifo(wait_fifo)
+        pid = os.fork()
+        if pid == 0:
+            try:
+                random.seed(os.getpid() * datetime.datetime.now().microsecond)
+                hose = Hose.participate(hose_name)
+                wait_fh = os.fdopen(os.open(wait_fifo, os.O_RDONLY|os.O_NONBLOCK))
+                args.append(ready_fifo)
+                args.append(wait_fh)
+                func(hose, *args)
+            except:
+                print 'child %d failed' % os.getpid()
+                traceback.print_exc()
+                pass
+            sys.exit()
+        else:
+            pids.add(pid)
+            ready_fh = os.fdopen(os.open(ready_fifo, os.O_RDONLY|os.O_NONBLOCK))
+            ready_fhs.add(ready_fh)
+            wait_fifos.append(wait_fifo)
+            ready_fh_pids['%s' % ready_fh.fileno()] = pid
+    while len(ready_fhs) > 0:
+        fhs = select.select(list(ready_fhs), [], [], None)
+        for fh in fhs[0]:
+            ready_fhs.remove(fh)
+            fh.close()
+    return pids, wait_fifos
+
+def ready_set_go(ready_fifo, wait_fh):
+    if ready_fifo is not None and wait_fh is not None:
+        ready_fh = open(ready_fifo, 'w')
+        ready_fh.write('%d\n' % os.getpid())
+        ready_fh.flush()
+        ready_fh.close()
+        os.unlink(ready_fifo)
+        select.select([wait_fh,], [], [], None)
+        wait_fh.close()
+    return True
+
+def fork_timer(pids, wait_fifos):
+    start = datetime.datetime.now()
+    for fifo in wait_fifos:
+        fh = open(fifo, 'w')
+        fh.write('go\n')
+        try:
+            fh.flush()
+        except:
+            pass
+        fh.close()
+        os.unlink(fifo)
+    while len(pids) > 0:
+        (pid, status) = os.wait()
+        pids.remove(pid)
+    return timesince(start)
+
+def serial_deposit(hose, count, ready_fifo=None, wait_fh=None):
+    pid = os.getpid()
+    if GET_PROTEINS_FROM_FILE is not None:
+        proteins = pickle.load(file(GET_PROTEINS_FROM_FILE))
+    else:
+        proteins = list()
+        for i in range(count):
+            proteins.append(random_protein(pid, i))
+        #fn = '%s.%d.pickle' % (hose.name().replace('/', '_'), os.getpid())
+        #print "pickling proteins to %s" % fn
+        #pickle.dump(proteins, file(fn, 'w'))
+    ready_set_go(ready_fifo, wait_fh)
+    start = datetime.datetime.now()
+    for i in range(count):
+        hose.deposit(proteins[i])
+    return timesince(start)
+
+def parallel_deposit(hose, processes, count):
+    pids, wait_fifos = xfork(hose.get_hose_name(), processes, 0, serial_deposit, count)
+    return fork_timer(pids, wait_fifos)
+
+def serial_sequential_read(hose, ready_fifo=None, wait_fh=None):
+    n = hose.oldest_index()
+    ready_set_go(ready_fifo, wait_fh)
+    start = datetime.datetime.now()
+    i = 0
+    while True:
+        try:
+            p = hose.nth_protein(n)
+            n += 1
+            i += 1
+        except PoolNoSuchProteinException, e:
+            break
+    #print 'sequential read: %d got %d proteins' % (os.getpid(), i)
+    return timesince(start)
+
+def parallel_sequential_read(hose, processes):
+    pids, wait_fifos = xfork(hose.get_hose_name(), processes, 0, serial_sequential_read)
+    return fork_timer(pids, wait_fifos)
+
+def serial_random_read(hose, ready_fifo=None, wait_fh=None):
+    n = hose.oldest_index()
+    m = hose.newest_index()
+    ms = range(n, m+1)
+    ns = list()
+    while len(ms) > 0:
+        x = random.randrange(0, len(ms))
+        ns.append(ms.pop(x))
+    ready_set_go(ready_fifo, wait_fh)
+    start = datetime.datetime.now()
+    i = 0
+    for n in ns:
+        p = hose.nth_protein(n)
+        i += 1
+    #print 'random read: %d got %d proteins' % (os.getpid(), i)
+    return timesince(start)
+
+def parallel_random_read(hose, processes):
+    pids, wait_fifos = xfork(hose.get_hose_name(), processes, 0, serial_random_read)
+    return fork_timer(pids, wait_fifos)
+
+def await(hose, ready_fifo=None, wait_fh=None):
+    ready_set_go(ready_fifo, wait_fh)
+    start = datetime.datetime.now()
+    i = 0
+    while True:
+        try:
+            p = hose.await_next(timeout=1)
+            i += 1
+        except (PoolNoSuchProteinException, PoolAwaitTimedoutException):
+            break
+    return timesince(start)
+
+def read_and_deposit(hose, processes, count):
+    hose_name = hose.get_hose_name()
+    d_pids, d_wait_fifos = xfork(hose_name, processes, 0, serial_deposit, count)
+    a_pids, a_wait_fifos = xfork(hose_name, processes, processes, await)
+    return fork_timer(d_pids.union(a_pids), d_wait_fifos + a_wait_fifos)
+
+def clear_hose(name, size=1024*100, index_capacity=100):
+    if Hose.exists(name):
+        Hose.dispose(name)
+    Hose.create(name, 'mmap', { 'size': unt64(size), 'index-capacity': unt64(index_capacity) })
+    return Hose.participate(name)
+
+def time_and_report(times, func, div, *args):
+    fname = func.__name__
+    times[fname] = func(*args) / div
+    print '%25s = %f ms' % (fname, times[fname] * 1000)
+
+def main():
+    p = optparse.OptionParser()
+    p.add_option('-n', '--proteins', dest='proteins', action='store', type='int', default=10000, help="Number of proteins to deposit, per process")
+    p.add_option('-j', '--processes', dest='processes', action='store', type='int', default=8, help="Number of processes to run in parallel (set to zero to skip parallel benchmark tests)")
+    p.add_option('-r', '--read-only', dest='deposit', action='store_const', const=False, default=True, help="Only read from existing pools; do not create or write to pools")
+    p.add_option('-w', '--write-only', dest='read', action='store_const', const=False, default=True, help="Only perform deposit benchmark tests")
+    p.add_option('-l', '--local-only', dest='tcp', action='store_const', const=False, default=True, help="Only benchmark local (mmap) pools")
+    p.add_option('-t', '--tcp-only', dest='local', action='store_const', const=False, default=True, help="Only benchmark remote (tcp) pools")
+    p.add_option('-p', '--pickle', dest='pickle', action='store', type='string', default=None, help="Use proteins from specified pickle file")
+    p.add_option('-s', '--size', dest='size', action='store', type='int', default=102400, help="Create pools with specified size")
+    p.add_option('-i', '--index-capacity', dest='index_capacity', type='int', default=100, help="Create pools with specified index capacity")
+    opts, args = p.parse_args()
+    if opts.pickle is not None:
+        global GET_PROTEINS_FROM_FILE
+        GET_PROTEINS_FROM_FILE = sys.argv[1]
+    init_words()
+    times = dict()
+    procs = opts.processes
+    prots = opts.proteins
+    hoses = list()
+    if opts.tcp:
+        hoses.append('tcp://localhost/pyplasma-bench-tcp')
+    if opts.local:
+        hoses.append('pyplasma-bench-local')
+    for hose_name in hoses:
+        times[hose_name] = dict()
+        xtimes = times[hose_name]
+        print hose_name
+        if opts.deposit:
+            if procs > 0:
+                hose = clear_hose(hose_name, opts.size, opts.index_capacity)
+                time_and_report(xtimes, parallel_deposit, procs * prots, hose, procs, prots)
+                hose.withdraw()
+            hose = clear_hose(hose_name, opts.size, opts.index_capacity)
+            time_and_report(xtimes, serial_deposit, prots, hose, prots)
+            hose.withdraw()
+        #continue
+        if opts.read:
+            hose = Hose.participate(hose_name)
+            xprots = hose.newest_index() - hose.oldest_index() + 1
+            time_and_report(xtimes, serial_sequential_read, xprots, hose)
+            time_and_report(xtimes, serial_random_read, xprots, hose)
+            if procs > 0:
+                time_and_report(xtimes, parallel_sequential_read, procs * xprots, hose, procs)
+                time_and_report(xtimes, parallel_random_read, procs * xprots, hose, procs)
+            hose.withdraw()
+        if opts.read and opts.deposit and procs > 0:
+            xprocs = int(procs / 2)
+            if xprocs < 1:
+                xprocs = 1
+            hose = clear_hose(hose_name, opts.size, opts.index_capacity)
+            time_and_report(xtimes, read_and_deposit, xprocs * prots, hose, xprocs, prots)
+            hose.withdraw()
+        #Hose.dispose(hose_name)
+        #break
+    print "================================================"
+    keys = ('serial_deposit', 'serial_sequential_read', 'serial_random_read', 'parallel_deposit', 'parallel_sequential_read', 'parallel_random_read', 'read_and_deposit')
+    for k in keys:
+        for hose_name in hoses:
+            if times.has_key(hose_name) and times[hose_name].has_key(k):
+                print "%25s: %f ms (%s)" % (k, times.get(hose_name, {}).get(k, 0.0) * 1000, hose_name.rsplit('-', 1)[1])
+    #print times
+
+if '__main__' == __name__:
+    main()
+

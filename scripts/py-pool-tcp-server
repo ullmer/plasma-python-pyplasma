@@ -1,0 +1,206 @@
+#!python
+
+import optparse, logging, datetime, socket, ssl, platform, os, signal, traceback, sys
+import plasma
+from plasma.const import *
+from plasma.protein import Protein
+from plasma.hose import Hose
+from plasma.hose.tcpserver import TCPServer
+import plasma.zeroconf
+
+def options():
+    p = optparse.OptionParser()
+    p.add_option('-c', '--count', dest='count', action='store_true', default=False, help='count network operations')
+    p.add_option('-d', '--debug', dest='debug', action='store_true', default=False, help="don't ever fork (initially or to service requests)")
+    p.add_option('-n', '--no-fork', dest='no_fork', action='store_true', default=False, help="don't for initially (but fork to service requests)")
+    p.add_option('-v', '--verbose', dest='verboce', action='store_true', default=False, help='verbose')
+    p.add_option('-q', '--quiet', dest='quiet', action='store_true', default=False, help="don't print a message if port is in use (but still exit with code 9)")
+    p.add_option('-p', '--port', dest='port', action='store', type='int', default=DEFAULT_PORT, help='specify a port to listen on (default %d)' % DEFAULT_PORT)
+    p.add_option('-P', '--auto-port', dest='auto_port', action='store', type='string', default=None, help="choose an unused port automatically, and print the port and PID to the specified file")
+    p.add_option('-s', '--wait', dest='wait', action='store', type='int', default=None, help="number of seconds to wait (on exit) for child processes to die before killing them (default is to not kill children)")
+    p.add_option('-X', '--info-file', dest='info_file', action='store', type='string', default=None, help="file to print information to on exit")
+    p.add_option('-l', '--log-dir', dest='log_dir', action='store', type='string', default=None, help='name of pool directory to log messages to (especially useful in conjunction with -v)')
+    p.add_option('-L', '--log-pool', dest='log_pool', action='store', type='string', default=None, help='name of pool to log messages to (especially useful in conjunction with -v)')
+    p.add_option('-S', '--secure', dest='ssl', action='store_const', const='secure', default=None, help='only allow secure connections (using TLS)')
+    p.add_option('-I', '--insecure', dest='ssl', action='store_const', const='insecure', help='only allow insecure connections (forbid TLS) (default is to allow both secure and insecure connections, although some builds of g-speak do not support secure connections)')
+    p.add_option('-z', '--zname', dest='zname', action='store', type='string', default=platform.node().split('.')[0], help='Name to announce for Zeroconf service (default %s)' % platform.node().split('.')[0])
+    p.add_option('-Z', '--subtype', dest='subtype', action='append', help='Zeroconf subtype to advertise (repeat to advertise multiple subtypes)')
+
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#usage: pool_tcp_server [-c] [-d] [-n] [-v] [-q] [-t] [-T] [-p <port>]
+#                       [-P <file>] [-s <seconds>] [-X <file>]
+#                       [-L <pool>] [-l <pool prefix>]
+#       -c count network operations
+#       -d don't ever fork (initially or to service requests)
+#       -n don't fork initially (but fork to service requests)
+#       -v verbose
+#       -q don't print a message if port is in use
+#          (but still exit with code 9)
+#       -p specify port to listen on (default 65456)
+#       -P choose an unused port automatically, and print
+#          the port and PID to the specified file
+#       -s number of seconds to wait (on exit) for child
+#          processes to die before killing them
+#          (default is to not kill children)
+#       -X file to print information to on exit
+#       -l name of pool directory to log messages to
+#          (especially useful in conjunction with -v)
+#       -L name of pool to log messages to
+#          (especially useful in conjunction with -v)
+#       -t (option not supported on this platform)
+#       -T (option not supported on this platform)
+#       -S only allow secure connections (using TLS)
+#       -I only allow insecure connections (forbid TLS)
+#          (default is to allow both secure and insecure connections,
+#           although some builds of g-speak do not support secure
+#           connections)
+#
+#exit codes:
+#    0 success
+#    1 other failure
+#    9 port is already in use by another program
+    opts, names = p.parse_args()
+    return opts, names
+
+def do_server_loop(conn):
+    while 1:
+        try:
+            buf = conn.read()
+            if not buf:
+                break
+            #print buf
+        except SSL.SSLError, what:
+            if str(what) == 'unexpected eof':
+                break
+            else:
+                raise
+        except:
+            break
+    if conn.get_shutdown():
+        return 1
+    return 0
+
+def server_process(sock, addr, opts):
+    pid = os.getpid()
+    logging.info('connection opened for %s on pid %d' % (addr,pid))
+    def term_handler(sig, frame):
+        logging.info('server for %s on pid %d terminating' % (addr, pid))
+        raise ShutdownException()
+    try:
+        server = TCPServer(sock, addr, opts.ssl)
+        server.runloop()
+        if opts.count:
+            statstr = '^ %s: %s: ' % (server.process(), server.name())
+            tot = 0
+            for i in range(len(server.op_counts())):
+                if server.op_counts()[i] > 0:
+                    statstr += '%d => %d, ' % (i, server.op_counts()[i])
+                    tot += server.op_counts()[i]
+            statstr += 'total => %d' % tot
+            print statstr
+    except ShutdownException:
+        sys.exit(0)
+    logging.info('connection for %s on pid %d closed' % (addr,pid))
+
+def run_server(sock, opts):
+    pids = set()
+    def shutdown_handler(sig, frame):
+        raise ShutdownException()
+    def reaper(sig, frame):
+        (pid, status) = os.wait()
+        if pid in pids:
+            pids.remove(pid)
+    signal.signal(signal.SIGCHLD, reaper)
+    zc = plasma.zeroconf.Zeroconf()
+    if opts.subtype and len(opts.subtype) > 0:
+        regtype = 'pool-server,%s' % ','.join(opts.subtype)
+    else:
+        regtype = 'pool-server'
+    zc.register(regtype, opts.port, opts.zname)
+    try:
+        signal.signal(signal.SIGTERM, shutdown_handler)
+        while True:
+            #print 'server looping'
+            conn, addr = None, None
+            try:
+                conn, addr = sock.accept()
+            except socket.error:
+                pass
+            except KeyboardInterrupt:
+                break
+            if conn is not None:
+                if opts.debug:
+                    server_process(conn, addr, opts)
+                    conn.close()
+                else:
+                    pid = os.fork()
+                    if pid == 0:
+                        logging.info("process %d forked to service connection", os.getpid())
+                        signal.signal(signal.SIGTERM, signal.SIG_DFL)
+                        try:
+                            sock.close()
+                            server_process(conn, addr, opts)
+                        except:
+                            traceback.print_exc()
+                            pass
+                        logging.info("connection closed, forked process %d exiting", os.getpid())
+                        sys.exit(0)
+                    else:
+                        pids.add(pid)
+                        conn.close()
+            #for pid in list(pids):
+            #    (xpid, status) = os.waitpid(pid, os.P_NOWAIT)
+            #    logging.debug('Child process %d reaped' % xpid)
+            #    pids.remove(xpid)
+        #print 'loop finished'
+    except:
+        pass
+    logging.info("Shutting down")
+    zc.unregister()
+    if opts.wait is not None:
+        time.sleep(opts.wait)
+        for pid in list(pids):
+            logging.debug("killing child process %d" % pid)
+            os.kill(pid, signal.SIGTERM)
+            #os.waitpid(pid, 0)
+
+def main():
+    opts, args = options()
+    if opts.auto_port is not None:
+        opts.port = DEFAULT_PORT - 1
+    while True:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.bind(('', opts.port))
+            break
+        except socket.error:
+            if opts.auto_port is not None:
+                opts.port -= 1
+            else:
+                if not opts.quiet:
+                    logging.error("Could not bind to port %d, perhaps it is already in use" % opts.port)
+                sys.exit(9)
+    if opts.auto_port is not None:
+        file(opts.auto_port, 'w').write(opts.port)
+    logging.info("Server started on port %d" % opts.port)
+    sock.listen(5)
+    if opts.debug or opts.no_fork:
+        run_server(sock, opts)
+    else:
+        pid = os.fork()
+        if pid == 0:
+            logging.info("daemon process %d forked" % os.getpid())
+            run_server(sock, opts)
+            logging.info("daemon process %d exiting" % os.getpid())
+            sys.exit(0)
+        else:
+            print "daemon process running on pid %d" % pid
+            sys.exit(0)
+
+class ShutdownException(Exception):
+    pass
+
+if '__main__' == __name__:
+    main()
+

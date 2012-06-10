@@ -1,0 +1,61 @@
+#!python
+
+import optparse, glob, re, fnmatch
+import plasma.hose
+from plasma.exceptions import *
+
+def main():
+    p = optparse.OptionParser()
+    p.add_option('-q', '--quiet', dest='quiet', action='store_true', default=False, help="don't complain if pool doesn't exist")
+    p.add_option('-w', '--wildcard', dest='wildcard', action='store_true', default=False, help="allow pool name to be a wildcard (glob pattern)")
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#Usage: p-stop [-q] [-w] <pool name> [...]
+#    -q don't complain if pool doesn't exist
+#    -w allow pool name to be a wildcard (glob pattern)
+    opts, names = p.parse_args()
+    for pool in names:
+        if opts.wildcard:
+            wildcard_dispose(pool, opts.quiet)
+        else:
+            literal_dispose(pool, opts.quiet)
+
+def literal_dispose(pool, quiet=False):
+    try:
+        plasma.hose.Hose.dispose(pool)
+    except PoolNoSuchPoolException, e:
+        if not quiet:
+            print 'no can stop %s: %s' % (pool, e.name())
+    except ObException, e:
+        print 'no can stop %s: %s' % (pool, e.name())
+
+def wildcard_dispose(pool, quiet=False):
+    for p in wildcard_find(pool):
+        literal_dispose(pool, quiet)
+
+def wildcard_find(pool):
+    m = re.match('^(tcp[os]?://[a-z0-9\\.\\-]+(?::[0-9]+)?/)(.*)$', pool)
+    if m is not None:
+        all_pools = plasma.hose.Hose.list_ex(m.group(1))
+        for p in all_pools:
+            if fnmatch.fnmatchcase(p, pool):
+                yield '%s%s' % (m.group(1), p)
+    else:
+        pdir = plasma.config.ob_pools_dir()
+        if pool.startswith('local:'):
+            pool = pool[6:]
+        if not pool.startswith('/'):
+            pool = os.path.join(pdir, pool)
+        for p in glob.glob(pool):
+            if p.startswith(pdir):
+                p = p[len(pdir):]
+                if p.startswith('/'):
+                    p = p[1:]
+            else:
+                p = 'local:%s' % p
+            yield p
+
+if '__main__' == __name__:
+    main()
+
+
+

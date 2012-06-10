@@ -1,0 +1,18 @@
+#!python
+
+import optparse, sys
+import plasma.hose
+
+def main():
+    p = optparse.OptionParser()
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#Usage: p-resize <pool name> <new size>
+    opts, args = p.parse_args()
+
+if '__main__' == __name__:
+    print "resize not implemented in pyplasma"
+    sys.exit()
+    main()
+
+
+

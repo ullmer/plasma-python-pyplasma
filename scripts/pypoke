@@ -1,0 +1,36 @@
+#!python
+
+import optparse
+import plasma
+from plasma.const import *
+
+def main():
+	p = optparse.OptionParser()
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#Usage: poke [options] [pool] [file ...]
+#  -h, --help             print this help, then exit
+#  -d, --descrips         slawx to be added to descrips of protein
+#  -i, --ingests          slawx to be added to ingests of protein
+#      --slaw             input slaw as yaml quoted strings (repeatable)
+#  -t, --timecode         use timecode for deposit speed
+#  -s, --speed            throttle speed to pro/s or timestamp ratio
+#  -l, --loop             number of times to loop, or 't' for infinite
+#      --limit            limit number of proteins
+#  -o, --output           output pools or files
+#  -f, --file             input files
+#  -b, --binary           force binary form (should autodetect)
+#  -w, --wait             console wait for each deposited protein
+#      --stats            generate protist stats at exit
+#      --profile          generate continuous protist stats
+#  -v, --version          show version number and exit
+#  -u, --unique           use unique pool names
+#  -c, --create           create auto-disposed pools as needed
+#  -p, --persist          create persistent pools as needed
+#  pool                   if -o not yet used, a single output pool (or file)
+#  file...                optional input files, streamed in order given
+	opts, names = p.parse_args()
+
+if '__main__' == __name__:
+    main()
+
+

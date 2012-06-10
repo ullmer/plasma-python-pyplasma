@@ -1,0 +1,56 @@
+#!python
+
+import optparse
+import plasma.hose
+from loam import obbool
+from loam.obnum import obint, obfloat
+
+def main():
+    p = optparse.OptionParser()
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#Usage: p-info <pool name>
+    opts, args = p.parse_args()
+    h = plasma.hose.Hose.participate(args[0])
+    try:
+        ox = h.oldest_index()
+        op = h.nth_protein(ox)
+    except PoolNoSuchProteinException:
+        op = None
+    try:
+        nx = h.newest_index()
+        np = h.nth_protein(nx)
+    except PoolNoSuchProteinException:
+        np = None
+    if op is not None:
+        print 'oldest: %20d  %s' % (op.index(), op.timestamp().strftime('%a %b %e %H:%M:%S %Y'))
+    if np is not None:
+        print 'newest: %20d  %s' % (np.index(), np.timestamp().strftime('%a %b %e %H:%M:%S %Y'))
+    print ''
+    hop = 0
+    while True:
+        p = h.get_info(hop)
+        print 'hop %d:' % hop
+        print '---'
+        for key in ('type', 'terminal', 'host', 'port', 'net-pool-version', 'slaw-version', 'size', 'size-used', 'mmap-pool-version', 'index-capacity', 'index-step', 'index-count', 'auto-dispose', 'checksum', 'frozen', 'stop-when-full', 'sync', 'flags'):
+            if p.ingests().has_key(key):
+                val = p.ingests()[key]
+                if isinstance(val, obbool):
+                    if val:
+                        val = 'true'
+                    else:
+                        val = 'false'
+                elif isinstance(val, obint):
+                    val = int(val)
+                elif isinstance(val, obfloat):
+                    val = float(val)
+                print '%s: %s' % (key, val)
+        print '...'
+        print ''
+        hop += 1
+        if p.ingests()['terminal']:
+            break
+
+if '__main__' == __name__:
+    main()
+
+

@@ -1,0 +1,3 @@
+%YAML 1.1
+%TAG ! tag:oblong.com,2009:slaw/
+--- !vector [!i16 125, !i16 -125]

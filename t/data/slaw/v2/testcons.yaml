@@ -1,0 +1,6 @@
+# g-speak 3.0.3, libYaml 0.1.3                               -*- mode: text -*-
+%YAML 1.1
+%TAG ! tag:oblong.com,2009:slaw/
+--- !cons
+left: right
+...

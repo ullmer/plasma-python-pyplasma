@@ -1,0 +1,52 @@
+#!python
+
+import optparse
+import plasma
+from plasma.const import *
+
+def main():
+	p = optparse.OptionParser()
+    p.add_option('-b', '--binary', dest='binary', action='store_true', default=False, help='use binary form for proteins')
+    p.add_option('-l', '--lossless', dest='lossless', action='store_true', defaule=False, help='use typed tagged numbers for YAML proteins')
+    p.add_option('-y', '--directives', dest='directives', action='store_true', default=False, help='drop %%YAML directives in YAML proteins')
+    p.add_option('-o', '--outfile', dest='outfile', action='store', type='string', default=None, help='use filename instead of stdout')
+    p.add_option('-i', '--input', dest='input', action='append', type='string', help='input pools and/or files')
+    p.add_option(None, '--limit', dest='limit', action='store', type='int', default=None, help='limit number of proteins')
+    p.add_option(None, '--stats', dest='stats', action='store_true', default=False, help='generate protist stats at exit')
+    p.add_option(None, '--profile', dest='profile', action='store_true', default=False, help='generate continuous protist stats')
+    p.add_option('-v', '--version', dest='version', action='store_true', default=False, help='show version number and exit')
+#g-speak SOE (c) Oblong Industries - g-speak 3.0.3
+#Usage: peek [options] [pool] [filter1 ...]
+#  -h, --help             print this help, then exit
+#  -b, --binary           use binary form for proteins
+#  -l, --lossless         use typed tagged numbers for YAML proteins
+#  -y, --directives       drop %%YAML directives in YAML proteins
+#  -o, --outfile          use filename instead of stdout
+#  -i, --input            input pools and/or files
+#      --limit            limit number of proteins
+#      --stats            generate protist stats at exit
+#      --profile          generate continuous protist stats
+#  -v, --version          show version number and exit
+#  -1                     short for --backby 1 --limit 1
+#  -2                     short for --backby 2 --limit 2
+#  -u, --unique           use unique pool names
+#  -c, --create           create auto-disposed pools as needed
+#  -p, --persist          create persistent pools as needed
+#  -n, --next             do not block across all inputs (with pool_await_next_multi)
+#  -a, --await            pool timeout across all inputs (<0 is forever)(default 0.2)
+#  -d, --drain            drain all available input on each cycle
+#  -x, --exit             exit when no protein available on any input channel
+#  -j, --jump             jump over old inputs to latest protein
+#  -r, --rewind           rewind input pools to oldest available protein
+#  -t, --timecode         add timecode keypair upon protein read to ingests
+#      --priority         use priority input ordering (not round robin)
+#      --backby           move read head back by # proteins
+#  -f, --filter           filter strings - in order descrip filters
+#  -g, --gap              use gap search (instead of contig) for filters
+#  pool                   if -i not yet used, a single input pool (or file)
+#  filter1...             optional filter strings for in order descrip filters
+	opts, names = p.parse_args()
+
+if '__main__' == __name__:
+    main()
+
