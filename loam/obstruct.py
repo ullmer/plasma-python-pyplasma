@@ -298,7 +298,8 @@ class obmap(dict):
         Like dict.__setitem__, but tries to ensure that the value is a
         loam type.
         """
-        if not self.__key_positions.has_key(key):
+        #if not self.__key_positions.has_key(key):
+        if key not in self.__key_positions:
             self.__key_positions[key] = self.__key_count
             self.__key_count += 1
         dict.__setitem__(self, key, make_loamtype(value))

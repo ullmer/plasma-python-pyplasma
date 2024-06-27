@@ -22,11 +22,13 @@ def flip_prefix(prefix):
         return '>'
 
 def make_loamtype(value):
-    if type(value) in (int, float, long, complex, decimal.Decimal):
+    #if type(value) in (int, float, long, complex, decimal.Decimal):
+    if type(value) in (int, float, complex, decimal.Decimal):
         return make_obnumber(value)
     if type(value) in (datetime.date, datetime.datetime):
         return loam.obtime.obtimestamp(value)
-    if type(value) in (str, unicode):
+    #if type(value) in (str, unicode):
+    if isinstance(value, str):
         return loam.obstr.obstring(value)
     if type(value) == tuple and len(value) == 2:
         return loam.obstruct.obcons(value)
@@ -80,7 +82,7 @@ def make_obnumbers(*values):
     maxint = 0
     for val in values:
         if isinstance(val, complex):
-            raise TypeError, "Can't use complex numbers with make_obnumbers()"
+            raise TypeError("Can't use complex numbers with make_obnumbers()")
         elif isinstance(val, (loam.obnum.obint, loam.obnum.obfloat)):
             if val.is_float:
                 is_float = True

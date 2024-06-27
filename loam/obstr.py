@@ -2,7 +2,8 @@ import struct
 from loam.util import get_prefix, AM_I_BIG_ENDIAN
 from loam.obnum import unt64, int64
 
-class obstring(unicode):
+class obstring(str): #since strings are Unicode by default in python3
+#class obstring(unicode):
     """
     obstrings behave just like unicode strings, but have a to_slaw
     method attached to them.  All of the usual string methods work here,
@@ -176,4 +177,5 @@ class obstring(unicode):
     def to_yaml(self, indent=''):
         return '%s' % self
 
-import obstruct
+#import obstruct
+import loam.obstruct
