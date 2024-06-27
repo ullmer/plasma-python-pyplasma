@@ -57,7 +57,8 @@ class SemaphoreSet(object):
         semkey = self.__random_sem_key()
         while True:
             try:
-                mode = 0666
+                #mode = 0666
+                mode = 0o666
                 id = plasma.sem_ops.c.semget(semkey, nsems=POOL_SEM_SET_COUNT, semflg=mode|IPC_CREAT|IPC_EXCL)
                 self.__key = semkey
                 self.__id = id
@@ -74,7 +75,8 @@ class SemaphoreSet(object):
         self.__setval(POOL_SEM_NOTIFICATION_LOCK_IDX, 1)
 
     def __open_semaphores(self, key):
-        mode = 0666
+        #mode = 0666
+        mode = 0o666
         try:
             id = plasma.sem_ops.c.semget(key, nsems=0, semflg=mode)
             self.__key = key
@@ -87,7 +89,8 @@ class SemaphoreSet(object):
         time.sleep(random.uniform(lo, hi))
 
     def __recreate_maliciously_deleted_semaphore(self):
-        mode = 0666
+        #mode = 0666
+        mode = 0o666
         old_sem_id = self.__id
         while True:
             try:
@@ -163,10 +166,12 @@ class SemaphoreSet(object):
             self.__recreate_maliciously_deleted_semaphore()
         try:
             ret = self.__semop([lock_op,])
-        except (SemInvalidException, SemDoesNotExistException), e:
+        #except (SemInvalidException, SemDoesNotExistException), e:
+        except (SemInvalidException, SemDoesNotExistException) as e:
             logging.exception("%s lock semop failed with %s, which probably means somebody deleted a pool you were still using" % (self.__idx_name(idx), type(e).__name__))
             raise
-        except SemNoSpaceException, e:
+        #except SemNoSpaceException, e:
+        except SemNoSpaceException as e:
             logging.exception("%s lock semop failed with %s, which probably means you have too many concurrent locks in this process" % (self.__idx_name(idx), type(e).__name__))
             raise
         try:
@@ -191,10 +196,12 @@ class SemaphoreSet(object):
             raise LockingException("%s lock count %d (should be 0)" % (self.__idx_name(idx), count))
         try:
             self.__semop([unlock_op,])
-        except (SemInvalidException, SemDoesNotExistException), e:
+        #except (SemInvalidException, SemDoesNotExistException), e:
+        except (SemInvalidException, SemDoesNotExistException) as e:
             logging.exception("%s unlock semop failed with %s, which probably means somebody deleted a pool you were still using" % (self.__idx_name(idx), type(e).__name__))
             raise
-        except SemNoSpaceException, e:
+        #except SemNoSpaceException, e:
+        except SemNoSpaceException as e:
             logging.exception("%s lock semop failed with %s, which probably means you have too many concurrent locks in this process" % (self.__idx_name(idx), type(e).__name__))
             raise
         try:
