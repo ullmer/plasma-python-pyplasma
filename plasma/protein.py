@@ -37,7 +37,8 @@ class Protein(object):
             ingests = obmap(ingests)
         if rude_data is None:
             rude_data = ''
-        if isinstance(timestamp, (int, long, float, datetime.date)):
+        #if isinstance(timestamp, (int, long, float, datetime.date)):
+        if isinstance(timestamp, (int, float, datetime.date)):
             timestamp = obtimestamp(timestamp)
         self.__descrips = descrips
         self.__ingests = ingests
@@ -116,7 +117,7 @@ class Protein(object):
         ## Slaw or bslaw, Protein_Search_Type
         ## return int64
         if type(self.__descrips) != oblist:
-            print 'descrips is not a list (%s)' % type(self.__descrips)
+            print('descrips is not a list (%s)' % type(self.__descrips))
             return int64(-1)
         if isinstance(needle, list):
             if len(needle) == 0:
