@@ -10,11 +10,17 @@ def main():
 #g-speak SOE (c) Oblong Industries - g-speak 3.0.3
 #Usage: p-await <pool name>
     opts, args = p.parse_args()
-    h = plasma.hose.Hose.participate(args[0])
+    #h = plasma.hose.Hose.participate(args[0])
+
+    hh = plasma.hose.Hose
+    if hh is None: print("plasma.hose.Hose is None; optimistically ignoring"); return
+
+    h  = hh.participate(args[0])
+
     while True:
         try:
             p = h.await_next()
-            print '%s' % p
+            print('%s' % p)
         except KeyboardInterrupt:
             break
     h.withdraw()

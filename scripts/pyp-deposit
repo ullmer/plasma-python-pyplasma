@@ -24,10 +24,10 @@ def main():
     p = Protein(descrips, ingests)
     h = plasma.hose.Hose.participate(args[0])
     if opts.verbose:
-        print 'depositing in %s\n%s' % (args[0], p)
+        print('depositing in %s\n%s' % (args[0], p))
     dep = h.deposit_ex(p)
     if opts.verbose:
-        print 'deposited protein at index %d with timestamp %s' % (dep['index'], dep['timestamp'])
+        print('deposited protein at index %d with timestamp %s' % (dep['index'], dep['timestamp']))
     h.withdraw()
 
 if '__main__' == __name__:

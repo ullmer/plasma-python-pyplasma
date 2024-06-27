@@ -7,6 +7,7 @@ from plasma.protein import Protein
 from plasma.hose import Hose
 from plasma.hose.tcpserver import TCPServer
 import plasma.zeroconf
+import ctypes 
 
 def options():
     p = optparse.OptionParser()
@@ -69,7 +70,8 @@ def do_server_loop(conn):
             if not buf:
                 break
             #print buf
-        except SSL.SSLError, what:
+        #except SSL.SSLError, what:
+        except (SSL.SSLError, what):
             if str(what) == 'unexpected eof':
                 break
             else:
@@ -97,7 +99,7 @@ def server_process(sock, addr, opts):
                     statstr += '%d => %d, ' % (i, server.op_counts()[i])
                     tot += server.op_counts()[i]
             statstr += 'total => %d' % tot
-            print statstr
+            print(statstr)
     except ShutdownException:
         sys.exit(0)
     logging.info('connection for %s on pid %d closed' % (addr,pid))
@@ -116,7 +118,19 @@ def run_server(sock, opts):
         regtype = 'pool-server,%s' % ','.join(opts.subtype)
     else:
         regtype = 'pool-server'
-    zc.register(regtype, opts.port, opts.zname)
+
+    #for i in (regtype, opts.port, opts.zname): print(type(i))
+    #TODO: needs revisiting (BAU)
+    #rt2 = regtype.encode('utf8') 
+    #rt2 = bytearray(regtype)
+    #rt2 = c_void_p(regtype) # per line 647 of b454261 https://github.com/kounch/pybonjour-python3/blob/master/pybonjour.py 
+
+    rt2 = ctypes.py_object(regtype)
+    oz2 = ctypes.py_object(opts.zname)
+
+    #zc.register(regtype, opts.port, opts.zname)
+    zc.register(rt2, opts.port, oz2)
+
     try:
         signal.signal(signal.SIGTERM, shutdown_handler)
         while True:
@@ -195,7 +209,7 @@ def main():
             logging.info("daemon process %d exiting" % os.getpid())
             sys.exit(0)
         else:
-            print "daemon process running on pid %d" % pid
+            print("daemon process running on pid %d" % pid)
             sys.exit(0)
 
 class ShutdownException(Exception):
