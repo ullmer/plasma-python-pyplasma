@@ -1,4 +1,4 @@
-import sys, select, socket, pybonjour, re, logging
+import sys, select, socket, pybonjour, re, logging, traceback, ctypes
 
 def log_error(msg, error_code):
     try:
@@ -14,6 +14,8 @@ class Zeroconf(object):
         self.registered_services = []
 
     def canonicalize_regtype(self, regtype):
+        if type(regtype)  is ctypes.py_object: return regtype #TODO: someone, please check!
+
         if ',' in regtype:
             (regtype, subtype) = regtype.split(',', 1)
         else:
@@ -128,28 +130,48 @@ class Zeroconf(object):
     def register(self, regtype, port=0, name=None, txt=''):
         flags = 0
         index = 0
-        if name is not None:
+        if name is not None and type(name) is not ctypes.py_object:
             name = name.encode('utf8')
+            #name = name.encode('iso8859_7')
+            #BAU : unsure, but per (a) failure and (b) 
+            # https://gis.stackexchange.com/questions/298557/valueerror-invalid-field-type-class-bytes
         regtype = self.canonicalize_regtype(regtype)
-        if ',' in regtype:
+
+        if type(regtype) is ctypes.py_object: pass #TODO: someone, please check!
+        elif ',' in regtype:
             (junk, subtype) = regtype.split(',', 1)
             txt = pybonjour.TXTRecord()
             for st in subtype.split(','):
                 txt[st] = None
         else:
-            txt = txt.encode('utf8')
+            pass
+            #txt = txt.encode('utf8')
+            #txt = txt.encode('iso8859_7') #BAU: same as ~10 lines above
         domain = None
         host = None
         #print 'regtype = %s, txt = %s' % (regtype, txt)
-        fh = pybonjour.DNSServiceRegister(name=name, regtype=regtype, port=port, txtRecord=txt, callBack=self.register_callback)
+
+        try:
+          fh = pybonjour.DNSServiceRegister(name=name, regtype=regtype, port=port, txtRecord=txt, 
+                                            callBack=self.register_callback)
+        except:
+          print("PyBonjour.DNSServiceRegister error caught and ignored:")
+          #traceback.print_stack()
+          traceback.print_exc()
+
         #print 'fh = %s' % fh
         ready = select.select([fh], [], [])
-        pybonjour.DNSServiceProcessResult(fh)
+        try:
+          pybonjour.DNSServiceProcessResult(fh)
+        except:
+          print("PyBonjour.DNSServiceProcessResult error caught and ignored:")
+          traceback.print_exc()
 
     def register_callback(self, register, flags, err, name, regtype, domain):
         #print 'register_callback(%s, %s, %s, %s, %s, %s' % (register, flags, err, name, regtype, domain)
         if err != pybonjour.kDNSServiceErr_NoError:
-            print 'register error: %d' % err
+            #print 'register error: %d' % err
+            print('register error: %d' % err)
             log_error('register error', err)
         self.registered_services.append( (register, regtype, name, domain) )
 
@@ -165,18 +187,18 @@ class Zeroconf(object):
 
 if '__main__' == __name__:
     def cb(service):
-        print "Service:"
+        print("Service:")
         for k,v in service.iteritems():
-            print '  %8s: %s' % (k, v)
+            print('  %8s: %s' % (k, v))
     zc = Zeroconf()
     for regtype in sys.argv[1:]:
         services = zc.resolve(sys.argv[1], callback=cb)
         for name in sorted(services.keys()):
-            print '%s = [' % name
+            print('%s = [' % name)
             for idx in sorted(services[name].keys()):
-                print '    {'
+                print('    {')
                 for k,v in services[name][idx].iteritems():
-                    print '        %8s: %s,' % (k, v)
-                print '    },'
-            print ']'
+                    print('        %8s: %s,' % (k, v))
+                print('    },')
+            print(']')
 
