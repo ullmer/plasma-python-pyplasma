@@ -1,4 +1,6 @@
-import struct, cStringIO
+#import struct, cStringIO
+import struct
+from io import StringIO
 from loam.util import get_prefix
 from loam.exceptions import *
 from loam.obsimple import obnil, obbool
@@ -356,7 +358,8 @@ def parse_protein(header, fh, backward=False):
             qr += 1
     #print 'prefix = %s; w=%s;n=%s;d=%s;i=%s;r=%s;q=%s;p=%s;f=%s' % (prefix, w, n, d, i, r, q, p, f)
     pdata = fh.read((q - qr)*4)
-    xfh = cStringIO.StringIO(pdata)
+    #xfh = cStringIO.StringIO(pdata)
+    xfh = StringIO.StringIO(pdata)
     if d:
         descrips = parse_slaw1(xfh, backward)
     else:

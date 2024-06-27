@@ -79,7 +79,8 @@ def skip_slaw2(fh, backward=False):
     try:
         return v2skippers[slaw_type](header, fh, backward)
     except:
-        print "error skipping slaw %s (with header 0x%016x / %s)" % (slaw_type, header, backward)
+        #print "error skipping slaw %s (with header 0x%016x / %s)" % (slaw_type, header, backward)
+        print("error skipping slaw %s (with header 0x%016x / %s)" % (slaw_type, header, backward))
         raise
 
 def parse_obnil(header, fh, backward=False):

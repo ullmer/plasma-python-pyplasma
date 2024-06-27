@@ -1,4 +1,7 @@
-import struct, cStringIO, re
+#import struct, cStringIO, re
+import struct, re
+from io import StringIO
+
 try:
     import yaml
 except:
@@ -92,7 +95,9 @@ def parse_slaw_data(version, data, backward=False):
     version in which the data was encoded, and backward is used internally to
     fix endianness issues.
     """
-    return parse_slaw(version, cStringIO.StringIO(data), backward)
+    #return parse_slaw(version, cStringIO.StringIO(data), backward)
+    result = parse_slaw(version, StringIO.StringIO(data), backward)
+    return result
 
 def degrade_json(obj):
     if type(obj) == list:
