@@ -8,7 +8,8 @@ from plasma.pool.util import makedirs, with_umask
 from plasma.pool.mmap.chunks import *
 from plasma.slaw import BINARY_MAGIC
 
-DEFAULT_MODE = 0777
+#DEFAULT_MODE = 0777
+DEFAULT_MODE = 0o777
 DEFAULT_OWNER = -1
 DEFAULT_GROUP = -1
 
@@ -49,7 +50,8 @@ class V1MMapPool(MMapPool):
         makedirs(self._directory, self._perm['mode'], self._perm['uid'], self._perm['gid'])
         makedirs(self._notification_directory, self._perm['mode'], self._perm['uid'], self._perm['gid'])
         self._sem = SemaphoreSet()
-        fh = os.fdopen(os.open(self._mmap_file, os.O_RDWR | os.O_CREAT | os.O_EXCL, self._perm['mode'] & 0666), 'rb+')
+        fh = os.fdopen(os.open(self._mmap_file, os.O_RDWR | os.O_CREAT | os.O_EXCL, self._perm['mode'] & 0o666), 'rb+')
+        #fh = os.fdopen(os.open(self._mmap_file, os.O_RDWR | os.O_CREAT | os.O_EXCL, self._perm['mode'] & 0666), 'rb+')
         #print 'fh = %s (%d)' % (self._mmap_file, fh.fileno())
         self._fh = fh
         os.chown(self._mmap_file, self._perm['uid'], self._perm['gid'])

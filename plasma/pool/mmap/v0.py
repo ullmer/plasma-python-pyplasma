@@ -38,7 +38,8 @@ class V0MMapPool(MMapPool):
         makedirs(self._directory, self._perm['mode'], self._perm['uid'], self._perm['gid'])
         makedirs(self._notification_directory, self._perm['mode'], self._perm['uid'], self._perm['gid'])
         self._sem = SemaphoreSet()
-        fh = os.fdopen(os.open(self._mmap_fil, os.O_RDWR | os.O_CREAT | os.O_EXCL, self._perm['mode'] & 0666), 'rw')
+        #fh = os.fdopen(os.open(self._mmap_fil, os.O_RDWR | os.O_CREAT | os.O_EXCL, self._perm['mode'] & 0666), 'rw')
+        fh = os.fdopen(os.open(self._mmap_fil, os.O_RDWR | os.O_CREAT | os.O_EXCL, self._perm['mode'] & 0o666), 'rw')
         self._fh = fh
         os.chown(self._mmap_file, self._perm['uid'], self._perm['gid'])
         os.ftruncate(fh.fileno(), self._size)
@@ -192,7 +193,8 @@ class OldV0MMapPool(MMapPool):
     def write_config_file(self, perms, file_size, header_size, idx_cap):
         conf = Protein(ingests=obmap({ 'file-size': unt64(file_size), 'header-size': unt64(header_size), 'index-capacity': unt64(idx_cap) }))
         plasma.slaw.write_slaw_file(self.__mmap_config, conf, self.__slaw_version)
-        os.chmod(self.__mmap_config, 0666)
+        #os.chmod(self.__mmap_config, 0666)
+        os.chmod(self.__mmap_config, 0o666)
 
     def init_pool_index(self, capacity):
         self.seek(POOL_MMAP_V0_HEADER_SIZE)
@@ -248,10 +250,12 @@ class OldV0MMapPool(MMapPool):
         self.__slaw_version = 2
         self.__mmap_file = ''
         try:
-            fh = os.fdopen(os.open(self.__mmap_file, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0666), 'rw')
+            #fh = os.fdopen(os.open(self.__mmap_file, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0666), 'rw')
+            fh = os.fdopen(os.open(self.__mmap_file, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o666), 'rw')
         except:
             unlink(self.__mmap_file)
-            fh = os.fdopen(os.open(self.__mmap_file, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0666), 'rw')
+            #fh = os.fdopen(os.open(self.__mmap_file, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0666), 'rw')
+            fh = os.fdopen(os.open(self.__mmap_file, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o666), 'rw')
         self.__chunks = {
             'conf': {
                 'sem-key': sem_key,
@@ -259,7 +263,8 @@ class OldV0MMapPool(MMapPool):
             'perm': {
                 'uid': -1,
                 'gid': -1,
-                'mode': 0666,
+                'mode': 0o666,
+                #'mode': 0666,
             },
         }
         os.ftruncate(fh.fileno(), size)

@@ -41,7 +41,8 @@ def with_config_lock(f):
         return ret
     return wrapper
 
-def makedirs(dirname, mode=0777, uid=-1, gid=-1):
+#def makedirs(dirname, mode=0777, uid=-1, gid=-1):
+def makedirs(dirname, mode=0o777, uid=-1, gid=-1):
     if os.path.isdir(dirname):
         return True
     if os.path.exists(dirname):

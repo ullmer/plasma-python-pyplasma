@@ -8,7 +8,8 @@ from plasma.pool.util import makedirs, pools_dir, with_umask, with_config_lock
 import plasma.slaw
 from plasma.protein import Protein
 
-DEFAULT_MODE = 0777
+#DEFAULT_MODE = 0777
+DEFAULT_MODE = 0o777
 DEFAULT_OWNER = -1
 DEFAULT_GROUP = -1
 NULL_BYTE = chr(0)
@@ -98,7 +99,8 @@ class MMapPool(object):
     def _get_permissions(self, options):
         if options is None:
             return {
-                'mode': int64(0777),
+                #'mode': int64(0777),
+                'mode': int64(0o777),
                 'uid': int64(-1),
                 'gid': int64(-1)
             }
@@ -361,9 +363,11 @@ class MMapPool(object):
                 return self._fifo_fh
         fifo_name = ''.join(RANDCHARS[random.randint(0, len(RANDCHARS)-1)] for i in range(12))
         fifo_file = os.path.join(self._notification_directory, fifo_name)
+        #oif os.path.exists(fifo_file):
         if os.path.exists(fifo_file):
             return self._open_fifo()
-        os.mkfifo(fifo_file, 0622)
+        #os.mkfifo(fifo_file, 0622)
+        os.mkfifo(fifo_file, 0o622)
         self._fifo_file = fifo_file
         self._fifo_fh = open(self._fifo_file, 'r+b')
         return self._fifo_fh
@@ -586,7 +590,8 @@ class MMapPool(object):
                         raise PoolNoSuchProteinException("protein %d no longer in pool" % idx)
             if offset is not None:
                 if offset < 0:
-                    print "seek_to offset %d" % offset
+                    #print "seek_to offset %d" % offset
+                    print("seek_to offset %d" % offset)
                 self.seek(offset)
                 return idx
         if idx > self.newest_index():
@@ -651,7 +656,8 @@ class MMapPool(object):
                 raise
         self.seek(new)
         while True:
-            rem = self.await(timeout, interrupt=interrupt)
+            #rem = self.await(timeout, interrupt=interrupt)
+            rem = self._await(timeout, interrupt=interrupt)
             try:
                 protein = self.nth_protein(idx)
                 return protein
@@ -793,7 +799,8 @@ class MMapPool(object):
         if self.tell() > new:
             if timeout == POOL_NO_WAIT:
                 raise PoolAwaitTimedoutException()
-            self.await(timeout, interrupt=interrupt)
+            #self.await(timeout, interrupt=interrupt)
+            self._await(timeout, interrupt=interrupt)
         (old, new) = self._pointers()
         if self.tell() < old:
             self.seek(old)
@@ -840,7 +847,8 @@ class MMapPool(object):
             return self.nth_protein(self._last['index'] - 1)
         raise PoolNoSuchProteinException("already at protein zero")
 
-    def await(self, timeout=POOL_WAIT_FOREVER, interrupt=None):
+    #def await(self, timeout=POOL_WAIT_FOREVER, interrupt=None):
+    def _await(self, timeout=POOL_WAIT_FOREVER, interrupt=None):
         fh = self.add_awaiter()
         (old, new) = self._pointers()
         if self.tell() <= new:

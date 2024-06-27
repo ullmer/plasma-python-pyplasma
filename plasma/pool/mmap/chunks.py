@@ -159,7 +159,8 @@ class ptrsChunk(Chunk):
 class permChunk(Chunk):
     _name = 'perm'
     _keys = [
-        { 'name': 'mode', 'format': 'q', 'default': 0666 },
+        #{ 'name': 'mode', 'format': 'q', 'default': 0666 },
+        { 'name': 'mode', 'format': 'q', 'default': 0o666 },
         { 'name': 'uid',  'format': 'q', 'default': -1 },
         { 'name': 'gid',  'format': 'q', 'default': -1 }
     ]

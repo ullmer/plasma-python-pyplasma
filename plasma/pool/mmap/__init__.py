@@ -11,7 +11,8 @@ from plasma.protein import Protein
 from plasma.slaw import BINARY_MAGIC
 from plasma.pool.mmap.chunks import *
 
-DEFAULT_MODE = 0777
+#DEFAULT_MODE = 0777
+DEFAULT_MODE = 0o777
 DEFAULT_OWNER = -1
 DEFAULT_GROUP = -1
 NULL_BYTE = chr(0)
@@ -139,7 +140,8 @@ class MMapPool(object):
         try:
             timestamp = obtimestamp(timestamp)
         except:
-            print "bad timestamp: %f at %d (%d)" % (timestamp, pos, pos % self.file_size())
+            #print "bad timestamp: %f at %d (%d)" % (timestamp, pos, pos % self.file_size())
+            print("bad timestamp: %f at %d (%d)" % (timestamp, pos, pos % self.file_size()))
             raise
         protein.set_origin(self)
         protein.set_index(index)
@@ -202,7 +204,8 @@ class MMapPool(object):
                single_file=False,
                size=POOL_SIZE_SMALL,
                index_capacity=0,
-               mode=0777,
+               #mode=0777,
+               mode=0o777,
                uid=-1,
                gid=-1,
                stop_when_full=False,
@@ -224,7 +227,8 @@ class MMapPool(object):
                                single_file=False,
                                size=POOL_SIZE_SMALL,
                                index_capacity=0,
-                               mode=0777,
+                               #mode=0777,
+                               mode=0o777,
                                uid=-1,
                                gid=-1,
                                stop_when_full=False,
@@ -506,7 +510,8 @@ class MMapPool(object):
                 raise PoolAwaitTimedoutException()
         self.seek(new)
         while True:
-            rem = self.await(timeout, interrupt=interrupt)
+            #rem = self.await(timeout, interrupt=interrupt)
+            rem = self._await(timeout, interrupt=interrupt)
             try:
                 return self.nth_protein(idx)
             except PoolNoSuchProteinException:
@@ -645,7 +650,8 @@ class MMapPool(object):
         if self.tell() > new:
             if timeout == POOL_NO_WAIT:
                 raise PoolAwaitTimedoutException()
-            self.await(timeout, interrupt=interrupt)
+            #self.await(timeout, interrupt=interrupt)
+            self._await(timeout, interrupt=interrupt)
         (old, new) = self.__pointers()
         if self.tell() < old:
             self.seek(old)
@@ -701,7 +707,9 @@ class MMapPool(object):
     ## extensions ##
     ## ---------- ##
 
-    def await(self, timeout=POOL_WAIT_FOREVER, interrupt=None):
+    #def await(self, timeout=POOL_WAIT_FOREVER, interrupt=None):
+    #BAU: await is now a reserved word
+    def _await(self, timeout=POOL_WAIT_FOREVER, interrupt=None):
         fh = self.add_awaiter()
         (old, new) = self.__pointers()
         if self.tell() <= new:
@@ -783,7 +791,8 @@ class MMapPool(object):
         fifo_file = os.path.join(self.__notification_directory, fifo_name)
         if os.path.exists(fifo_file):
             return self.__open_fifo()
-        os.mkfifo(fifo_file, 0622)
+        #os.mkfifo(fifo_file, 0622)
+        os.mkfifo(fifo_file, 0o622)
         self.__fifo_file = fifo_file
         self.__fifo_fh = open(self.__fifo_file, 'r+b')
         return self.__fifo_fh
@@ -908,7 +917,8 @@ class MMapPool(object):
             if xidx is not None and offset >= old and abs(index - xidx) < abs(index - start_index) and xidx <= index:
                 yidx = self.__index_at(offset)
                 if yidx != xidx:
-                    print "pool index corrupt: reported %d at %d, but it's actually %d" % (xidx, offset, yidx)
+                    #print "pool index corrupt: reported %d at %d, but it's actually %d" % (xidx, offset, yidx)
+                    print("pool index corrupt: reported %d at %d, but it's actually %d" % (xidx, offset, yidx))
                 else:
                     start_index = xidx
                     start_pos = offset
@@ -1078,7 +1088,8 @@ class MMapPool(object):
                  single_file=False,
                  size=POOL_SIZE_SMALL,
                  index_capacity=0,
-                 mode=0777,
+                 #mode=0777,
+                 mode=0o777,
                  uid=-1,
                  gid=-1,
                  stop_when_full=False,
@@ -1102,7 +1113,8 @@ class MMapPool(object):
         else:
             self.__create_v0(size, index_capacity, mode, uid, gid, stop_when_full, frozen, auto_dispose, checksum, sync)
 
-    def __create_v0(self, size=POOL_SIZE_SMALL, index_capacity=0, mode=0777, uid=-1, gid=-1, stop_when_full=False, frozen=False, auto_dispose=False, checksum=False, sync=False):
+    #def __create_v0(self, size=POOL_SIZE_SMALL, index_capacity=0, mode=0777, uid=-1, gid=-1, stop_when_full=False, frozen=False, auto_dispose=False, checksum=False, sync=False):
+    def __create_v0(self, size=POOL_SIZE_SMALL, index_capacity=0, mode=0o777, uid=-1, gid=-1, stop_when_full=False, frozen=False, auto_dispose=False, checksum=False, sync=False):
         self.__init_v0(POOL_DIRECTORY_VERSION_CONFIG_IN_FILE)
         self.__header_size = POOL_MMAP_V0_HEADER_SIZE
         if self.__index_capacity > 0:
@@ -1125,7 +1137,8 @@ class MMapPool(object):
         self.__fh.close()
         self.__fh = None
 
-    def __create_v1(self, size=POOL_SIZE_SMALL, index_capacity=0, mode=0777, uid=-1, gid=-1, stop_when_full=False, frozen=False, auto_dispose=False, checksum=False, sync=False):
+    #def __create_v1(self, size=POOL_SIZE_SMALL, index_capacity=0, mode=0777, uid=-1, gid=-1, stop_when_full=False, frozen=False, auto_dispose=False, checksum=False, sync=False):
+    def __create_v1(self, size=POOL_SIZE_SMALL, index_capacity=0, mode=0o777, uid=-1, gid=-1, stop_when_full=False, frozen=False, auto_dispose=False, checksum=False, sync=False):
         conf = confChunk()
         ptrs = ptrsChunk()
         perm = permChunk()
@@ -1173,7 +1186,8 @@ class MMapPool(object):
         self.__save_default_config()
 
     def __init_mmap_file(self):
-        fh = os.fdopen(os.open(self.__mmap_file, os.O_RDWR|os.O_CREAT|os.O_EXCL, self.__perm['mode'] & 0666), 'rb+')
+        #fh = os.fdopen(os.open(self.__mmap_file, os.O_RDWR|os.O_CREAT|os.O_EXCL, self.__perm['mode'] & 0666), 'rb+')
+        fh = os.fdopen(os.open(self.__mmap_file, os.O_RDWR|os.O_CREAT|os.O_EXCL, self.__perm['mode'] & 0o666), 'rb+')
         os.chown(self.__mmap_file, self.__perm['uid'], self.__perm['gid'])
         os.ftruncate(fh.fileno(), self.__size)
         fh.seek(0)
@@ -1289,7 +1303,8 @@ class MMapPool(object):
         self.__fh = os.fdopen(os.open(path, os.O_RDWR|os.O_SHLOCK))
         try:
             self.__mmap = mmap.mmap(self.__fh.fileno(), 0)
-        except mmap.error, e:
+        #except mmap.error, e:
+        except mmap.error as e:
             self.__fh.close()
             self.__fh = None
             raise PoolMmapBadthException('%s' % e)

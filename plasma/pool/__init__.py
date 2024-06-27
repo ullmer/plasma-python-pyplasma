@@ -171,7 +171,8 @@ def __create_mmap_pool(name, size):
             ('next_index', 0)
         ),
         ('perm', 
-            ('mode', 0777),
+            #('mode', 0777),
+            ('mode', 0o777),
             ('uid', -1),
             ('gid',-1)
         ),
@@ -185,10 +186,14 @@ def __create_mmap_pool(name, size):
         values = tuple(kv[1] for kv in chunk[1:])
         fh.write(__make_chunk(chunk[0], *values))
     fh.close()
-    os.chmod(tmppath, 0777)
-    os.chmod(conf_file, 0666)
-    os.chmod(mmap_file, 0666)
-    os.makedirs(not_dir, 01777)
+    #os.chmod(tmppath, 0777)
+    #os.chmod(conf_file, 0666)
+    #os.chmod(mmap_file, 0666)
+    #os.makedirs(not_dir, 01777)
+    os.chmod(tmppath,    0o777)
+    os.chmod(conf_file,  0o666)
+    os.chmod(mmap_file,  0o666)
+    os.makedirs(not_dir, 0o1777)
     os.rename(tmppath, path)
     return path
 
