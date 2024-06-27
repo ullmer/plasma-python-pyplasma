@@ -1,0 +1,53 @@
+commit 6937377dd20bfb677d285c14e3a4f293516d8d70
+Author: Mmmm Mmmmmm <vvvvvvvv@oooooo.com>
+Date:   Fri Sep 28 15:22:55 2012 -0700
+
+    testing
+
+commit d10359c6699d735716e56c97018e5afd0cf6747b
+Author: Mmmm Mmmmmm <vvvvvvvv@oooooo.com>
+Date:   Fri Sep 28 15:14:04 2012 -0700
+
+    testing
+
+commit 07a08ae632ebec6e0ed3f42a33a244170e662128
+Author: Mmmm Mmmmmm <vvvvvvvv@oooooo.com>
+Date:   Fri Sep 28 15:08:29 2012 -0700
+
+    Whole bunch of bugfixes
+
+commit d4da7d0ab70651dd4a7d0a2516ea44eae34356a9
+Author: Mmmm Mmmmmm <vvvvvvvv@oooooo.com>
+Date:   Mon Aug 20 16:18:31 2012 -0700
+
+    Added a bit to the documentation, made ssl import optional in tcp hoses.
+
+commit 14429621226720467193243d203df46000ffcd2a
+Author: Mmmm Mmmmmm <vvvvvvvv@oooooo.com>
+Date:   Mon Aug 20 10:59:04 2012 -0700
+
+    Version 0.2.0 ready.  Includes local (mmap) pools
+
+commit b2713ea76968c44c248b15a2cae1f98fae481d14
+Author: Mmmm Mmmmmm <vvvvvvvv@oooooo.com>
+Date:   Wed Jul 25 17:14:48 2012 -0700
+
+    bug fixes
+
+commit d5d68b5ee2ad6f62c049efed7ed4142f875ece78
+Author: Mmmm Mmmmmm <vvvvvvvv@oooooo.com>
+Date:   Thu Jul 12 11:43:52 2012 -0700
+
+    Tests, build script, repo cleanup
+
+commit 24f28cdfa6b146993886a3701aa94665ce5c27b1
+Author: Mmmm Mmmmmm <vvvvvvvv@oooooo.com>
+Date:   Fri Jun 15 11:52:03 2012 -0700
+
+    Added documentation
+
+commit ee58dea0261af9897bec63c3f8979e35f4f90649
+Author: Mmmm Mmmmmm <vvvvvvvv@oooooo.com>
+Date:   Sun Jun 10 16:45:05 2012 -0700
+
+    initial project creation
