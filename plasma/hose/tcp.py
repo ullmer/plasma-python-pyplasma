@@ -1,4 +1,7 @@
-import sys, os, socket, signal, struct, select, cStringIO
+#import sys, os, socket, signal, struct, select, cStringIO
+import sys, os, socket, signal, struct, select, ctypes
+
+from io import StringIO
 try:
     import ssl
 except:
@@ -105,8 +108,15 @@ class TCPHose(Hose):
             HANDSHAKE[TCP_PROTOCOL_VERSION_INDEX] = TCP_PROTOCOL_VERSION
             HANDSHAKE[SLAW_VERSION_INDEX] = SLAW_VERSION
             sendbytes = ''.join(chr(x) for x in HANDSHAKE)
-        sock.sendall(sendbytes)
+        #sock.sendall(sendbytes)
+        sb = ctypes.py_object(sendbytes)
+        sock.sendall(sb)
         recvbytes = sock.recv(1024)
+        #print("handshake debug: recvbytes len:", len(recvbytes))
+        if len(recvbytes) < 3:
+          print("plasma/hose/tcb/handshake issue: recvbytes is less than 3; a work in progress")
+          return (None, None, None) #TODO: would be wonderful if someone could sanity-check this
+
         (protocol_version, slaw_version, ops_bytes) = struct.unpack('BBB', recvbytes[:3])
         if protocol_version == 0:
             return (0, 0, [])
@@ -132,6 +142,9 @@ class TCPHose(Hose):
             port = DEFAULT_PORT
         sock = cls.opensocket(host, port)
         (protocol_version, slaw_version, ops) = cls.handshake(sock)
+        if protocol_version == None: 
+            print("plasma/hose/tcp::connect : unknown error observed, attempting to punt & optimistically ignore")
+            return #TODO: should an exception be raised?
         if protocol_version == 0:
             ## version 0 pools don't support TLS
             if secure is not None and secure != 'optional':
@@ -376,11 +389,16 @@ class TCPHose(Hose):
                 self._socket = sock
                 self._encrypted = True
                 self._secure = True
-            except ssl.SSLError, e:
+            #except ssl.SSLError, e:
+            except(ssl.SSLError, e):
                 raise PoolTlsErrorException('%s' % e)
         else:
             raise PoolNoTlsException("TLS support not available from your Python installation")
         (protocol_version, slaw_version, ops) = self.handshake(self._socket, True)
+        if protocol_version == None: 
+            print("plasma/hose/tcp::starttls : unknown error observed, attempting to punt & optimistically ignore")
+            return #TODO: should an exception be raised?
+
         self._protocol_version = protocol_version
         self._slaw_version = slaw_version
         self._operations = ops

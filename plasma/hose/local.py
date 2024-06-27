@@ -234,7 +234,8 @@ class LocalHose(Hose):
                             repeat = True
                         else:
                             raise
-            except ObException, e:
+            #except ObException, e:
+            except(ObException, e):
                 op.set_exception(sys.exc_info())
         return ops
 

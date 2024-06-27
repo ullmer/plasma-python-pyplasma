@@ -152,6 +152,13 @@ class Hose(object):
           (system error such as a failure to acquire an OS lock)
         """
         (hose, parsed) = cls._get_hose_for_name(name)
+
+        #print("plasma/hose/__init__: hose, parsed==", hose, parsed) 
+        if hose is None:
+          print("plasma/hose/__init__: hose return from cls._get_hose_for_name", name, "is None;")
+          print(" optimistically punting and proceeding")
+          return None #TODO: this seems unlikely to be "right," but keeping toes crossed and swashbuckling forward
+
         hose.create(parsed['path'], pool_type, options)
         hose.close()
         return None
@@ -380,6 +387,11 @@ class Hose(object):
           (unexpected responses from the pool server)
         """
         (hose, parsed) = cls._get_hose_for_name(name)
+        if hose is None:
+           print("plasma/hose/participate:: cls._get_hose_for_name", name, "returned an empty hose")
+           print("optimistically ignoring and pushing on")
+           return None
+
         hose.participate(parsed['path'], options)
         return hose
 

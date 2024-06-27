@@ -136,7 +136,8 @@ class TCPServer(object):
             cmd_name = cmd.__name__[3:]
             try:
                 self._check_state(cmd_name)
-            except HoseStateException, e:
+            #except HoseStateException, e:
+            except(HoseStateException, e):
                 return False
             args = p.ingests().get('args', [])
             return cmd(*args)
@@ -155,7 +156,8 @@ class TCPServer(object):
         try:
             Hose.create(name, pool_type, options)
             self.respond(POOL_CMD_RESULT, int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()))
         self._state = HOSE_STATE_FINAL
         return False
@@ -164,7 +166,8 @@ class TCPServer(object):
         try:
             Hose.dispose(name)
             self.respond(POOL_CMD_RESULT, int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()))
         self._state = HOSE_STATE_FINAL
         return False
@@ -173,7 +176,8 @@ class TCPServer(object):
         try:
             Hose.rename(old_name, new_name)
             self.respond(POOL_CMD_RESULT, int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()))
         self._state = HOSE_STATE_FINAL
         return False
@@ -182,7 +186,8 @@ class TCPServer(object):
         try:
             Hose.sleep(name)
             self.respond(POOL_CMD_RESULT, int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()))
         self._state = HOSE_STATE_FINAL
         return False
@@ -192,7 +197,8 @@ class TCPServer(object):
             self.__name = name
             self.hose = Hose.participate(name, options)
             self.respond(POOL_CMD_RESULT, int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()))
         self._state = HOSE_STATE_PARTICIPATE
         return True
@@ -202,7 +208,8 @@ class TCPServer(object):
             self.__name = name
             self.hose = Hose.participate_creatingly(name, pool_type, options, participate_options)
             self.respond(POOL_CMD_RESULT, int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()))
         self._state = HOSE_STATE_PARTICIPATE
         return True
@@ -212,7 +219,8 @@ class TCPServer(object):
             self.hose.withdraw()
             self.hose = None
             self.respond(POOL_CMD_RESULT, int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()))
         self._state = HOSE_STATE_FINAL
         return False
@@ -235,7 +243,8 @@ class TCPServer(object):
         try:
             pools = Hose.list_pools()
             self.respond(POOL_CMD_RESULT, int64(OB_OK), pools)
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()), oblist())
         self._state = HOSE_STATE_FINAL
         return False
@@ -244,7 +253,8 @@ class TCPServer(object):
         try:
             pools = Hose.list_ex(subdir)
             self.respond(POOL_CMD_RESULT, int64(OB_OK), pools)
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()), oblist())
         self._state = HOSE_STATE_FINAL
         return False
@@ -262,14 +272,16 @@ class TCPServer(object):
         try:
             info = self.hose.get_info(hops)
             self.respond(POOL_CMD_RESULT, int64(OB_OK), info)
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()), Protein())
         return True
 
     def op_change_options(self, options):
         try:
             pass
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             pass
         return True
 
@@ -277,7 +289,8 @@ class TCPServer(object):
         try:
             idx = self.hose.newest_index()
             self.respond(POOL_CMD_RESULT, idx, int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, unt64(0), int64(e.retort()))
         return True
 
@@ -285,7 +298,8 @@ class TCPServer(object):
         try:
             idx = self.hose.oldest_index()
             self.respond(POOL_CMD_RESULT, idx, int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, unt64(0), int64(e.retort()))
         return True
 
@@ -293,7 +307,8 @@ class TCPServer(object):
         try:
             self.hose.advance_oldest(idx)
             self.respond(POOL_CMD_RESULT, int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()))
         return True
 
@@ -301,7 +316,8 @@ class TCPServer(object):
         try:
             x = self.hose.deposit_ex(p)
             self.respond(POOL_CMD_RESULT, x['index'], int64(OB_OK), x['timestamp'])
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, unt64(0), int64(e.retort()), float64(0))
         return True
 
@@ -310,7 +326,8 @@ class TCPServer(object):
             self.hose.SeekTo(idx)
             p = self.hose.next()
             self.respond(POOL_CMD_RESULT, p, p.timestamp(), p.index(), int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, Protein(), float64(0), unt64(0), int64(e.retort()))
         return True
 
@@ -319,7 +336,8 @@ class TCPServer(object):
             self.hose.SeekTo(idx)
             p = self.hose.prev()
             self.respond(POOL_CMD_RESULT, p, p.timestamp(), p.index(), int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, Protein(), float64(0), unt64(0), int64(e.retort()))
         return True
 
@@ -361,7 +379,8 @@ class TCPServer(object):
             if newest is None:
                 newest = int64(-1)
             self.respond(POOL_CMD_RESULT, rops, oldest, newest)
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, oblist, int64(-1), int64(-1))
         return True
 
@@ -369,7 +388,8 @@ class TCPServer(object):
         try:
             p = self.hose.nth_protein(idx)
             self.respond(POOL_CMD_RESULT, p, p.timestamp(), int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, Protein(), float64(0), int64(e.retort()))
         return True
 
@@ -377,7 +397,8 @@ class TCPServer(object):
         try:
             idx = self.hose.index_lookup(timestamp, whence, direction)
             self.respond(POOL_CMD_RESULT, int64(OB_OK), idx)
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()), unt64(0))
         return True
 
@@ -386,7 +407,8 @@ class TCPServer(object):
             self.hose.SeekTo(idx)
             p = self.hose.probe_back(search)
             self.respond(POOL_CMD_RESULT, p, p.timestamp(), p.index(), int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, Protein(), float64(0), unt64(0), int64(e.retort()))
         return True
 
@@ -395,7 +417,8 @@ class TCPServer(object):
             self.hose.SeekTo(idx)
             p = self.hose.probe_frwd(search)
             self.respond(POOL_CMD_RESULT, p, p.timestamp(), p.index(), int64(OB_OK))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, Protein(), float64(0), unt64(0), int64(e.retort()))
         return True
 
@@ -403,7 +426,8 @@ class TCPServer(object):
         try:
             p = self.hose.await_next(timeout=timeout)
             self.respond(POOL_CMD_RESULT, int64(OB_OK), p, p.timestamp(), p.index())
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()), Protein(), float64(0), unt64(0))
         return True
 
@@ -411,7 +435,8 @@ class TCPServer(object):
         try:
             p = self.hose.await_next(interrupt=self._socket)
             self.respond(POOL_CMD_RESULT, int64(OB_OK), p, p.timestamp(), p.index())
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_RESULT, int64(e.retort()), Protein(), float64(0), unt64(0))
         return True
 
@@ -424,7 +449,8 @@ class TCPServer(object):
                 p = self.hose.probe_frwd(search)
             self.respond(POOL_CMD_FANCY_RESULT_1, int64(OB_OK), p.timestamp(), p.index())
             self.respond(POOL_CMD_FANCY_RESULT_3, p.timestamp(), p.index(), p)
-        except PoolNoSuchProteinException, e:
+        #except PoolNoSuchProteinException, e:
+        except PoolNoSuchProteinException as e:
             self.respond(POOL_CMD_FANCY_RESULT_1, int64(e.retort()), float64(-1), int64(-1))
             try:
                 if search == NIL or isinstance(search, obnil):
@@ -437,9 +463,11 @@ class TCPServer(object):
                     p = self.hose.await_probe_frwd(search, interrupt=self._socket)
                 self.respond(POOL_CMD_FANCY_RESULT_2, int64(OB_OK), p.timestamp(), p.index())
                 self.respond(POOL_CMD_FANCY_RESULT_3, p.timestamp(), p.index(), p)
-            except (PlasmaException, LoamException, ObErrnoException), e:
+            #except (PlasmaException, LoamException, ObErrnoException), e:
+            except (PlasmaException, LoamException, ObErrnoException) as e:
                 self.respond(POOL_CMD_FANCY_RESULT_2, int64(e.retort()), float64(0), unt64(0))
-        except (PlasmaException, LoamException, ObErrnoException), e:
+        #except (PlasmaException, LoamException, ObErrnoException), e:
+        except (PlasmaException, LoamException, ObErrnoException) as e:
             self.respond(POOL_CMD_FANCY_RESULT_1, int64(e.retort()), float64(0), unt64(0))
         return True
 

@@ -76,7 +76,8 @@ class TCPHoseTestCase(unittest.TestCase):
             ## Let's just assume so
             USE_TLS = True
         except socket.error:
-            print 'pool server not running'
+            #print 'pool server not running'
+            print('pool server not running')
             SERVER_ALREADY_RUNNING = False
             ## No
             ## Can we run the C pool_tcp_server?
@@ -91,7 +92,8 @@ class TCPHoseTestCase(unittest.TestCase):
                 ## Does it support TLS?
                 try:
                     output = subprocess.check_output([POOL_SERVER_BIN, '--help'])
-                except subprocess.CalledProcessError, e:
+                #except subprocess.CalledProcessError, e:
+                except (subprocess.CalledProcessError, e):
                     output = e.output
                 if re.search('only allow secure connections', output):
                     ## Yes
