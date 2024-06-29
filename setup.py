@@ -91,7 +91,8 @@ class cbuild(Command):
         fh.write("#include <sys/sem.h>\n")
         fh.write("#include <errno.h>\n")
         fh.write("#include <stdio.h>\n")
-        fh.write("int main(int argc, char *argv) {\n")
+        # fh.write("int main(int argc, char *argv) {\n") 
+        fh.write("int main(int argc, char **argv) {\n")
         for size in sizes:
             fh.write("  %s %s_val = 1.1;\n" % (size, size.replace(' ', '')))
         for typ in types:
