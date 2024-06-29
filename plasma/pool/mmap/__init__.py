@@ -1288,7 +1288,8 @@ class MMapPool(object):
             chnk = Chunk.load(self.__mmap)
             header_size -= chnk.size()
             self.__chunks[chnk.name()] = chnk
-        if self.__chunks.has_key('indx'):
+        #if self.__chunks.has_key('indx'):
+        if 'indx' in self.__chunks:
             self.__indx = self.__chunks['indx']
         else:
             self.__indx = None

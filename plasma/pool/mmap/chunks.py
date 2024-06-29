@@ -71,7 +71,8 @@ class Chunk(object):
     def __getattribute__(self, key):
         if key.startswith('_'):
             return super(Chunk, self).__getattribute__(key)
-        if self._keydata.has_key(key):
+        #if self._keydata.has_key(key):
+        if key in self._keydata:
             if self._fh is None:
                 return self._cache.get(key, self._keydata[key]['default'])
             startpos = self._fh.tell()
