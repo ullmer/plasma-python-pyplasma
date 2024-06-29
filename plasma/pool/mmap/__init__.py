@@ -1300,7 +1300,9 @@ class MMapPool(object):
         path = self.__mmap_file
         if not os.path.exists(path):
             raise PoolNoSuchPoolException(self.name(), path)
-        self.__fh = os.fdopen(os.open(path, os.O_RDWR|os.O_SHLOCK))
+        #self.__fh = os.fdopen(os.open(path, os.O_RDWR|os.O_SHLOCK))
+        #BAU: beware possible CoPilot hallucinations may well be dancing with devilish dragons here. 
+        self.__fh = os.fdopen(os.open(path, os.O_RDWR|os.F_TLOCK))
         try:
             self.__mmap = mmap.mmap(self.__fh.fileno(), 0)
         #except mmap.error, e:
