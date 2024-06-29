@@ -140,7 +140,7 @@ setup(
     author           = "Ryan Clancey",
     author_email     = "rclancey@oblong.com",
     description      = "Pure Python implementation of oblong's plasma messaging protocol",
-    license          = "???",
+    license          = "MIT",
     keywords         = "plasma loam oblong g-speak spatial operating environment",
     url              = "http://platform.oblong.com/download/python",
     packages         = ['loam', 'plasma', 'plasma.slaw', 'plasma.sem_ops', 'plasma.pool', 'plasma.pool.mmap', 'plasma.hose', 'plasma.zeroconf'],
