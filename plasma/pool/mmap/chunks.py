@@ -17,13 +17,13 @@ class Chunk(object):
         (chunk_type,) = struct.unpack('4s', struct.pack('>I', x & 0xffffffff))
         (chunk_len,) = struct.unpack('Q', fh.read(8))
         fh.seek(8 * (chunk_len - 2), 1)
-        if chunk_type == 'conf':
+        if chunk_type == 'conf' or chunk_type == b'conf': #TODO: probably should be generalized
             return confChunk(fh, pos)
-        if chunk_type == 'ptrs':
+        if chunk_type == 'ptrs' or chunk_type == b'ptrs':
             return ptrsChunk(fh, pos)
-        if chunk_type == 'perm':
+        if chunk_type == 'perm' or chunk_type == b'perm':
             return permChunk(fh, pos)
-        if chunk_type == 'indx':
+        if chunk_type == 'indx' or chunk_type == b'indx':
             return indxChunk(fh, pos)
         raise PoolCorruptException("unknown chunk type '%s'" % chunk_type)
 
