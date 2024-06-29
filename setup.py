@@ -137,8 +137,8 @@ class my_build(build):
 setup(
     name             = "pyplasma",
     version          = plasma.const.PYPLASMA_VERSION,
-    author           = "Ryan Clancey",
-    author_email     = "rclancey@oblong.com",
+    author           = "Mmmm Mmmmmm",
+    author_email     = "vvvvvvvv@oooooo.com",
     description      = "Pure Python implementation of oblong's plasma messaging protocol",
     license          = "MIT",
     keywords         = "plasma loam oblong g-speak spatial operating environment",
