@@ -5,7 +5,10 @@ import os, sys, unittest, subprocess
 import plasma.const
 
 def read(fname):
-    return file(os.path.join(os.path.dirname(__file__), fname)).read()
+    filepath = os.path.join(os.path.dirname(__file__), fname)
+    f        = open(filepath)
+    return f.read()
+    #return file(os.path.join(os.path.dirname(__file__), fname)).read()
 
 class test(Command):
     description = "run tests"
@@ -81,7 +84,8 @@ class cbuild(Command):
                    'EPERM', 'ERANGE', 'E2BIG', 'EAGAIN', 'EFBIG', 'EIDRM']
         types = ['time_t', 'key_t', 'uid_t', 'gid_t', 'mode_t']
         sizes = ['char', 'short', 'int', 'long', 'long long']
-        fh = file('make_const.c', 'w')
+        #fh = file('make_const.c', 'w')
+        fh = open('make_const.c', 'w')
         fh.write("#include <sys/types.h>\n")
         fh.write("#include <sys/ipc.h>\n")
         fh.write("#include <sys/sem.h>\n")
@@ -117,7 +121,8 @@ class cbuild(Command):
         fh.close()
         cc = os.getenv('CC', 'gcc')
         subprocess.call([cc, '-o', 'make_const', 'make_const.c'])
-        fh = file('plasma/sem_ops/const.py', 'w')
+        #fh = file('plasma/sem_ops/const.py', 'w')
+        fh = open('plasma/sem_ops/const.py', 'w')
         subprocess.call(['./make_const',], stdout=fh)
         fh.close()
         os.remove('make_const')
@@ -131,10 +136,10 @@ class my_build(build):
 setup(
     name             = "pyplasma",
     version          = plasma.const.PYPLASMA_VERSION,
-    author           = "Mmmm Mmmmmm",
-    author_email     = "vvvvvvvv@oooooo.com",
+    author           = "Ryan Clancey",
+    author_email     = "rclancey@oblong.com",
     description      = "Pure Python implementation of oblong's plasma messaging protocol",
-    license          = "MIT",
+    license          = "???",
     keywords         = "plasma loam oblong g-speak spatial operating environment",
     url              = "http://platform.oblong.com/download/python",
     packages         = ['loam', 'plasma', 'plasma.slaw', 'plasma.sem_ops', 'plasma.pool', 'plasma.pool.mmap', 'plasma.hose', 'plasma.zeroconf'],
