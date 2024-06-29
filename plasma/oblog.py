@@ -31,16 +31,14 @@ def __pool_log(level, caller, msg):
         return False
 
 def debug(msg):
-    if LOG_HOSE is not None
-    pass
+    #if LOG_HOSE is not None
+    if LOG_HOSE is not None: pass
 
-def __pool_debug(msg):
+#def __pool_debug(msg):
 
-def info(msg):
-    pass
+def info(msg):    pass
 
-def warning(msg):
-    pass
+def warning(msg): pass
 
 def error(msg):
     pass
