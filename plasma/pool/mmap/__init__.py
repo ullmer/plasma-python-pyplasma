@@ -794,7 +794,10 @@ class MMapPool(object):
         #os.mkfifo(fifo_file, 0622)
         os.mkfifo(fifo_file, 0o622)
         self.__fifo_file = fifo_file
-        self.__fifo_fh = open(self.__fifo_file, 'r+b')
+        #self.__fifo_fh = open(self.__fifo_file, 'r+b')
+        #TODO: BAU requests someone to check the following!
+        #self.__fifo_fh = open(self.__fifo_file, 'rb', 0)
+        self.__fifo_fh = open(self.__fifo_file)
         return self.__fifo_fh
 
     def __close_fifo(self):
