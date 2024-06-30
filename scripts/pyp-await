@@ -14,8 +14,7 @@ def main():
 
     #hh = plasma.hose.Hose
     if h is None: print("plasma.hose.Hose is None; optimistically ignoring"); return
-
-    h  = hh.participate(args[0])
+    #h  = hh.participate(args[0])
 
     while True:
         try:
